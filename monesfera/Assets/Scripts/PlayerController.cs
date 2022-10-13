@@ -8,28 +8,24 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
-    
+    Rigidbody2D body;
     Vector2 direction;
     [SerializeField]
     float impulse = 2f;
     [SerializeField]
     TextMeshProUGUI labelFuel;
-    Rigidbody body;
-    public float MovimientoEjeX;
-    public float MovimientoEjeY;
-    public float MovimientoEjeZ;
-    public float VelocidadMovimiento = 1.5f;
-
+    [SerializeField]
+    
     // Start is called before the first frame update
 
-    float monedas = 0f;
+    float gasolinaActual = 100f;
 
     [SerializeField]
     GameObject prefabParticles;
     void Start()
     {
-        monedas = 100f;
-        body = GetComponent<Rigidbody>();
+        gasolinaActual = 100f;
+        body = GetComponent<Rigidbody2D>();
 
     }
     //añadir fuerza a body hacia la derecha
@@ -37,12 +33,11 @@ public class PlayerController : MonoBehaviour
     // Update se ira gastando
     void Update()
     {
-        MovimientoEjeX = -Input.GetAxis("Vertical") * Time.deltaTime * VelocidadMovimiento;
+        direction.x = Input.GetAxis("Horizontal") * Time.deltaTime * impulse;
+        direction.y = Input.GetAxis("Vertical") * Time.deltaTime * impulse;
 
-        MovimientoEjeZ = Input.GetAxis("Horizontal") * Time.deltaTime * VelocidadMovimiento;
-
-
-
+        gasolinaActual = gasolinaActual - 10f * Time.deltaTime;
+        labelFuel.text = gasolinaActual.ToString("00.00") + "%";
         //para que se mueva usando wasd/flechas o con mando
         //y = Input.GetAxis
 
@@ -51,17 +46,22 @@ public class PlayerController : MonoBehaviour
         //desactivar componente
 
         //si gasolina 0 o menos
+        if(gasolinaActual <= 0f)
+        { 
+            this.enabled = false;
+            labelFuel.text = "0 %";
+        }
 
     }
-    private void OnTriggerEnter(Collider collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Fuel" && monedas > 0.0f)
+        if (collision.tag == "Fuel" && gasolinaActual > 0.0f)
 
-            monedas = monedas += 10f;
+            gasolinaActual = gasolinaActual += 10f;
 
-        if (monedas > 100f)
+        if (gasolinaActual > 100f)
         {
-            monedas= 100f;
+            gasolinaActual = 100f;
 
         }
         
@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour
     
     private void FixedUpdate()
     {
-        
+        body.AddForce(direction, ForceMode2D.Impulse);
         
 
     }
